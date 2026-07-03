@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Priya! 🌸✨</title>
+    <style>
+        :root {
+            --neon-pink: #ff1493;
+            --pastel-pink: #ffb6c1;
+            --deep-pink: #ff69b4;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffe4e1, #ffc0cb, #ffb6c1);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow-x: hidden;
+            min-height: 100vh;
+            perspective: 1000px; /* 3D depth effect */
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 3D CANVAS BACKGROUND --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- PASSWORD LOCK SCREEN (GLASSMORPHISM + 3D) --- */
+        #lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 182, 193, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(255, 20, 147, 0.2);
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            transform: translateZ(50px) rotateX(10deg);
+            transition: 0.5s;
+        }
+
+        .login-box h1 {
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--deep-pink);
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .login-box p {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px 25px;
+            margin-bottom: 20px;
+            border: 2px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            text-align: center;
+            color: var(--neon-pink);
+            font-weight: bold;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .login-box button {
+            background: linear-gradient(45deg, var(--neon-pink), var(--deep-pink));
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(255, 20, 147, 0.4);
+            transition: 0.3s;
+        }
+
+        .login-box button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(255, 20, 147, 0.6);
+        }
+
+        .error-msg {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- MAIN CONTENT --- */
+        #main-content {
+            display: none;
+            opacity: 0;
+            position: relative;
+            z-index: 2;
+            transition: opacity 1.5s ease;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        header h1 {
+            color: white;
+            font-size: 4rem;
+            text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--deep-pink);
+            animation: float3D 4s ease-in-out infinite;
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(10deg); }
+        }
+
+        /* --- 3D PHOTO GALLERY --- */
+        .gallery-container {
+            max-width: 1100px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+        }
+
+        .gallery-title {
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        /* 3D Card Hover Effect */
+        .photo-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-15px) rotateX(10deg) rotateY(-10deg);
+            box-shadow: 0 30px 60px rgba(255, 20, 147, 0.25);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            transform: translateZ(20px); /* 3D pop out for image */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .photo-card p {
+            color: #d1477a;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transform: translateZ(10px);
+        }
+
+        /* --- 3D WISHES CARD --- */
+        .wishes-section {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            max-width: 800px;
+            margin: 60px auto 100px;
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(255, 101, 163, 0.15);
+            text-align: center;
+            border: 2px dashed rgba(255, 20, 147, 0.4);
+            transform: rotateX(5deg);
+        }
+
+        .wishes-section h2 {
+            color: var(--neon-pink);
+            text-shadow: 0 0 8px rgba(255,255,255,0.6);
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+        }
+
+        .wishes-section p {
+            color: #444;
+            line-height: 2;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="lock-screen">
+        <div class="login-box">
+            <h1> Priya Birthday Portal </h1>
+            <p>Hey Priya! Enter the magic word to see your birthday surprise ✨</p>
+            <input type="password" id="password-input" placeholder="Enter Password here...">
+            <button onclick="checkPassword()">Unlock The  Magic 💖</button>
+            <div class="error-msg" id="error-message">Aww! Wrong password. Try again Priya! 💕</div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <header>
+            <h1>Happy Birthday, Priya! 🎂✨</h1>
+            <p style="color: #666; font-size: 1.3rem; margin-top: 10px; font-weight: 500;">You deserve all the love & pink glitter in the world!</p>
+        </header>
+
+        <div class="gallery-container">
+            <h2 class="gallery-title">Golden Memories 📸💞</h2>
+            <div class="grid">
+                <div class="photo-card">
+                    <img src="photo1.jpg" alt="Memory 1">
+                    <p>My Absolute Favorite Person! 🌸</p>
+                </div>
+                <div class="photo-card">
+                    <img src="photo2.jpg" alt="Memory 2">
+                    </p> Favorite Guitarist 😌🎸</p>
+                </div>
+                <div class="photo-card">
+                    <img src="photo3.jpg" alt="Memory 3">
+                    <p>Keep Shining Always ⭐</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="wishes-section">
+            <h2>To The Best Priya Ever 📝💕</h2>
+            <p>
+                Happy Birthday priya Is birthday par mai wish karta hu ki tumhare chehre se ye cute si smile kabhi kam na ho. Tumhe life me sabse zyada success aur dher saara pinkish glow mile! Happy Birthday Priya!" 🎉🥳🎈
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- CUSTOM PASSWORD SET KAREIN ---
+        const SECRET_PASSWORD = "0307"; 
+
+        function checkPassword() {
+            const userInput = document.getElementById("password-input").value;
+            const errorMsg = document.getElementById("error-message");
+            const lockScreen = document.getElementById("lock-screen");
+            const mainContent = document.getElementById("main-content");
+
+            if (userInput === SECRET_PASSWORD) {
+                // Smooth 3D animation se lock screen hide karein
+                lockScreen.style.transform = "scale(0.8) rotateX(20deg)";
+                lockScreen.style.opacity = "0";
+                
+                setTimeout(() => {
+                    lockScreen.style.display = "none";
+                    mainContent.style.display = "block";
+                    setTimeout(() => {
+                        mainContent.style.opacity = "1";
+                    }, 50);
+                    // Canvas particles animation load karein
+                    initCanvas();
+                }, 800);
+            } else {
+                errorMsg.style.display = "block";
+                document.getElementById("password-input").value = "";
+            }
+        }
+
+        // Enter key keypress logic
+        document.getElementById("password-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkPassword();
+            }
+        });
+
+        // --- INTERACTIVE HTML5 CANVAS FOR 3D PARTICLES ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height + canvas.height;
+                this.size = Math.random() * 15 + 5;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.sin(Math.random() * 2) * 0.5;
+                this.type = Math.random() > 0.5 ? 'heart' : 'sparkle';
+                this.color = `rgba(255, ${Math.floor(Math.random() * 100) + 100}, ${Math.floor(Math.random() * 50) + 150}, ${Math.random() * 0.6 + 0.4})`;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 1 - 0.5;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+
+                if (this.type === 'heart') {
+                    // Draw a beautiful heart shape
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.bezierCurveTo(-this.size/2, -this.size/2, -this.size, 0, 0, this.size);
+                    ctx.bezierCurveTo(this.size, 0, this.size/2, -this.size/2, 0, 0);
+                    ctx.fill();
+                } else {
+                    // Draw a glowing sparkle star
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        ctx.lineTo(0, -this.size);
+                        ctx.rotate((Math.PI * 2) / 5);
+                        ctx.lineTo(0, -this.size / 2);
+                        ctx.rotate((Math.PI * 2) / 5);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+
+                if (this.y < -20) {
+                    this.y = canvas.height + 20;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+        }
+
+        function initCanvas() {
+            for (let i = 0; i < 60; i++) {
+                particles.push(new Particle());
+            }
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
