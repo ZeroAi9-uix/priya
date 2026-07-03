@@ -202,6 +202,7 @@
             transform-style: preserve-3d;
             cursor: pointer;
             transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
         }
 
         .photo-card:hover {
@@ -225,6 +226,35 @@
             font-weight: 600;
             font-size: 1.1rem;
             transform: translateZ(10px);
+            margin-bottom: 12px;
+        }
+
+        /* --- NEW MUSIC ON/OFF INLINE BUTTON --- */
+        .card-music-btn {
+            background: linear-gradient(45deg, var(--neon-pink), var(--deep-pink));
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+            transition: all 0.3s ease;
+            transform: translateZ(15px);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-music-btn:hover {
+            transform: translateZ(15px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.5);
+        }
+
+        .card-music-btn.playing {
+            background: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         /* --- 3D POP-UP MODAL LIGHTBOX --- */
@@ -359,17 +389,21 @@
         <div class="gallery-container">
             <h2 class="gallery-title">Golden Memories 📸💞</h2>
             <div class="grid">
-                <div class="photo-card" onclick="openLightbox('pookie.jpeg', 'My Absolute Favorite Person! 🌸', 'heeriye.mp3')">
+                <!-- Click directly opens lightbox on image click, button handles music -->
+                <div class="photo-card" onclick="if(!event.target.classList.contains('card-music-btn')) openLightbox('pookie.jpeg', 'My Absolute Favorite Person! 🌸')">
                     <img src="pookie.jpeg" alt="Memory 1">
                     <p>My Absolute Favorite Person! 🌸</p>
+                    <button class="card-music-btn" onclick="toggleCardMusic(this, 'heeriye.mp3')">🎵 Play Music</button>
                 </div>
-                <div class="photo-card" onclick="openLightbox('guitar.jpeg', 'Favorite Guitarist 😌🎸', 'ilahi.mp3')">
+                <div class="photo-card" onclick="if(!event.target.classList.contains('card-music-btn')) openLightbox('guitar.jpeg', 'Favorite Guitarist 😌🎸')">
                     <img src="guitar.jpeg" alt="Memory 2">
                     <p>Favorite Guitarist 😌🎸</p>
+                    <button class="card-music-btn" onclick="toggleCardMusic(this, 'ilahi.mp3')">🎵 Play Music</button>
                 </div>
-                <div class="photo-card" onclick="openLightbox('cutie.jpeg', 'Keep Shining Always ⭐', 'matargasti.mp3')">
+                <div class="photo-card" onclick="if(!event.target.classList.contains('card-music-btn')) openLightbox('cutie.jpeg', 'Keep Shining Always ⭐')">
                     <img src="cutie.jpeg" alt="Memory 3">
                     <p>Keep Shining Always ⭐</p>
+                    <button class="card-music-btn" onclick="toggleCardMusic(this, 'matargasti.mp3')">🎵 Play Music</button>
                 </div>
             </div>
         </div>
@@ -386,11 +420,11 @@
         const SECRET_PASSWORD = "0307"; 
         
         // --- MUSIC LOGIC CONTROLLER ---
-        // Yahan apne main background gaane ka path badal lena (e.g. 'bg.mp3')
-        let bgAudio = new Audio('bg.mp3'); 
+        let bgAudio = new Audio('bgmain.mp3'); 
         bgAudio.loop = true;
         
         let currentAudio = null;
+        let activeMusicBtn = null;
 
         function checkPassword() {
             const userInput = document.getElementById("password-input").value;
@@ -402,7 +436,6 @@
                 lockScreen.style.transform = "scale(0.8) rotateX(20deg)";
                 lockScreen.style.opacity = "0";
                 
-                // Browsers security policy block na kare isliye password validation gesture par hi play start hoga
                 bgAudio.play().catch(error => {
                     console.log("Background audio play block hua:", error);
                 });
@@ -427,41 +460,52 @@
             }
         });
 
-        function openLightbox(imgSrc, textContent, songSrc) {
-            // Step 1: Main background music ko pause karo
-            bgAudio.pause();
-
-            // Step 2: Agar pehle se koi photocard ka gaana chal rha hai to use clean karo
-            if (currentAudio) {
+        // --- NEW INLINE CARD MUSIC TOGGLE LOGIC ---
+        function toggleCardMusic(btnElement, songSrc) {
+            // Agar pehle se koi doosra card का गाना चल रहा है, तो उसे पहले बंद करो
+            if (currentAudio && activeMusicBtn !== btnElement) {
                 currentAudio.pause();
-                currentAudio = null;
+                activeMusicBtn.classList.remove('playing');
+                activeMusicBtn.innerHTML = "🎵 Play Music";
             }
 
+            // Agar wahi same button click hua hai aur gaana chal rha hai, toh pause karo
+            if (currentAudio && activeMusicBtn === btnElement) {
+                currentAudio.pause();
+                currentAudio = null;
+                activeMusicBtn.classList.remove('playing');
+                activeMusicBtn.innerHTML = "🎵 Play Music";
+                activeMusicBtn = null;
+                
+                // Background music resume karo
+                bgAudio.play().catch(e => console.log(e));
+                return;
+            }
+
+            // Naya gaana play karne ke liye main background music pause karo
+            bgAudio.pause();
+
+            currentAudio = new Audio(songSrc);
+            currentAudio.loop = true;
+            activeMusicBtn = btnElement;
+            
+            btnElement.classList.add('playing');
+            btnElement.innerHTML = "⏸️ Pause Music";
+
+            currentAudio.play().catch(error => {
+                console.log("Card music play block hua:", error);
+            });
+        }
+
+        // Lightbox ab sirf image open karega, automatic music play nahi karega
+        function openLightbox(imgSrc, textContent) {
             document.getElementById("modal-img").src = imgSrc;
             document.getElementById("modal-text").innerText = textContent;
             document.getElementById("gallery-modal").classList.add("active");
-            
-            // Step 3: Card wala specific song play karo
-            currentAudio = new Audio(songSrc);
-            currentAudio.loop = true;
-            currentAudio.play().catch(error => {
-                console.log("Card audio play block hua:", error);
-            });
         }
 
         function closeLightbox() {
             document.getElementById("gallery-modal").classList.remove("active");
-            
-            // Step 1: Card wale gaane ko completely pause karo
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-
-            // Step 2: Background music ko usi position se fir se start (resume) karo
-            bgAudio.play().catch(error => {
-                console.log("Background audio resume block hua:", error);
-            });
         }
 
         // --- INTERACTIVE HTML5 CANVAS FOR 3D PARTICLES ---
